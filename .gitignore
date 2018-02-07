@@ -1,4 +1,5 @@
 node_modules/*
-npm-degug*
+npm-debug*
+.expo/*
 *.log.*
 *.log
