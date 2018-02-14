@@ -1,17 +1,120 @@
 import React from 'react';
-import {Linking, StyleSheet, Text, TouchableOpacity, Image, View, FlatList} from 'react-native';
+import { View, Text } from 'react-native';
+import { DrawerNavigator } from 'react-navigation';
+
 import * as firebase from "firebase";
 
-export default class App extends React.Component {
+import Theme from './src/theme';
+import Styles from './src/styles';
+
+import { Constants, Font, AppLoading } from 'expo';
+
+import { ThemeProvider, Toolbar, Drawer } from 'react-native-material-ui';
+
+// Screens
+import HomeScreen from './src/screens/HomeScreen.js';
+import LoginScreen from './src/screens/LoginScreen.js';
+/**/
+
+/*
+    // Home Screen Class
+class HomeScreen extends React.Component {
+    // App Setup - Lifecycle stages
+
+    // App constructor - 1st stage
     constructor(props) {
         super(props);
+
+        // Initializes state
         this.state = {
-            isLoading: false,
-            events: []
-        }
+        };
     }
 
+    // Before rendering - 2nd stage
     componentWillMount() {
+    }
+
+    // Renders screen - 3rd stage
+    render() {
+        return (
+            <Text>
+                Yolo
+            </Text>
+        );
+    }
+
+    // After rendering - 4th stage
+    componentDidMount() {
+    };
+
+    // Support functions
+}
+/**/
+
+/*
+    // Login Screen Class
+class LoginScreen extends React.Component {
+    // App Setup - Lifecycle stages
+
+    // App constructor - 1st stage
+    constructor(props) {
+        super(props);
+
+        // Initializes state
+        this.state = {
+        };
+    }
+
+    // Before rendering - 2nd stage
+    componentWillMount() {
+    }
+
+    // Renders screen - 3rd stage
+    render() {
+        return null;
+    }
+
+    // After rendering - 4th stage
+    componentDidMount() {
+    };
+
+    // Support functions
+}
+/**/
+
+
+// Create Navigator App
+const Navigator = DrawerNavigator({
+    Home: { screen: HomeScreen },
+    Login: { screen: LoginScreen }
+},
+    {
+        initialRouteName: 'Home',
+        navigationOptions: {
+        }
+    });
+/**/
+
+
+// Home Screen Class
+export default class App extends React.Component {
+    // App Setup - Lifecycle stages
+
+    // App constructor - 1st stage
+    constructor(props) {
+        super(props);
+
+        // Initializes state
+        this.state = {
+            materialIconsReady: false,
+        };
+
+        // Binding functions
+    }
+
+    // Before rendering - 2nd stage
+    componentWillMount() {
+        // Initializes Firebase App
         firebase.initializeApp({
             apiKey: "AIzaSyDVDefC3iAYzUnRxj2B5HtqHEoKqvYcKjo",
             authDomain: "hackathon-panda.firebaseapp.com",
@@ -19,147 +122,31 @@ export default class App extends React.Component {
             projectId: "hackathon-panda",
             storageBucket: "hackathon-panda.appspot.com",
             messagingSenderId: "415762703810"
-        })
-    };
-
-    componentDidMount() {
-        this.setState({
-            isLoading: true
         });
+    }
 
-        let eventPath = "/events";
-        firebase.database().ref(eventPath).on('value', (snapshot) => {
-            if (snapshot.val()) {
-                let today = new Date();
-                let events = [];
-                for (let i in snapshot.val()) {
-                    if (snapshot.val()[i].endTimeDate > today.getTime()) {
-                        let event = Object.assign(snapshot.val()[i]);
-                        let startDate = new Date(event.startTimeDate);
-                        let endDate = new Date(event.endTimeDate);
-                        event.startDate = startDate.getDate() + "/" + startDate.getMonth() + "/" + startDate.getFullYear();
-                        event.startTime = startDate.getHours() + "h" + startDate.getMinutes() + "m";
-                        event.endDate = endDate.getDate() + "/" + endDate.getMonth() + "/" + endDate.getFullYear();
-                        event.endTime = endDate.getHours() + "h" + endDate.getMinutes() + "m";
-                        events.push(event);
-                    }
-                }
-                this.setState({
-                    isLoading: false,
-                    events: events
-                });
-            }
-        })
-    };
-
+    // Renders screen - 3rd stage
     render() {
+        if (!this.state.materialIconsReady)
+            return null;
+
         return (
-            <View style={styles.container}>
-                <FlatList data={this.state.events}
-                          renderItem={({item}) => <AbeuniEvent title={item.title} image={item.image}
-                                                               description={item.description} startDate={item.startDate}
-                                                               startTime={item.startTime} endDate={item.endDate}
-                                                               endTime={item.endTime} url={item.url}
-                                                               location={item.location}/>}/>
-            </View>
+            <ThemeProvider uiTheme={Theme}>
+                <Navigator/>
+            </ThemeProvider>
         );
     }
-}
 
-class AbeuniEvent extends React.PureComponent {
-    render() {
-        return (
-            <View style={styles.card}>
-                <View style={styles.left}>
-                    <Text style={styles.date}>{this.props.startDate}</Text>
-                    <Text style={styles.time}>{this.props.startTime}</Text>
-                    <Text style={styles.date}>{this.props.endDate}</Text>
-                    <Text style={styles.time}>{this.props.endTime}</Text>
-                    <TouchableOpacity style={styles.button} onPress={() => Linking.openURL(this.props.url)}>
-                        <Text style={styles.buttonText}>Mais ></Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.right}>
-                    <Image style={styles.image} source={{uri: this.props.image}}/>
-                    <Text style={styles.title}>{this.props.title}</Text>
-                    <Text style={styles.description}>{this.props.description}</Text>
-                    <Text style={styles.location}>Local: {this.props.location}</Text>
-                </View>
-            </View>
-        )
-    }
-}
+    // After rendering - 4th stage
+    async componentDidMount() {
+        // Load MaterialIcons Font
+        await Font.loadAsync({
+            'MaterialIcons': require('./assets/fonts/MaterialIcons-Regular.ttf')
+        });
 
-const styles = StyleSheet.create({
-    container: {
-        backgroundColor: '#fff',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginLeft: 10,
-        marginRight: 10,
-        marginBottom: 10,
-        marginTop: 50,
-        alignSelf: 'stretch',
-        flex: 1
-    },
-    card: {
-        borderRadius: 4,
-        borderColor: '#ff0000',
-        borderWidth: 0.5,
-        marginTop: 10,
-        flex: 1,
-        width: 300,
-        flexDirection: 'row'
-    },
-    left: {
-        flex: 1,
-        flexDirection: 'column',
-        marginRight: 5,
-        width: 40,
-        backgroundColor: 'red',
-        justifyContent: 'space-between'
-    },
-    right: {
-        flex: 2,
-        flexDirection: 'column',
-        marginLeft: 5,
-        width: 200
-    },
-    image: {
-        width: 190,
-        height: 50
-    },
-    title: {
-        fontWeight: 'bold',
-        fontSize: 15,
-        flexDirection: 'column',
-        justifyContent: 'center',
-        textAlign: 'center',
-        width: 190
-    },
-    description: {
-        fontSize: 10,
-        width: 190
-    },
-    date: {
-        fontSize: 15,
-        color: 'white',
-        textAlign: 'center'
-    },
-    time: {
-        fontSize: 12,
-        color: 'white',
-        textAlign: 'center'
-    },
-    location: {
-        textAlign: 'center'
-    },
-    button: {
-        backgroundColor: '#ff0000',
-        padding: 5
-    },
-    buttonText: {
-        color: '#fff',
-        textAlign: 'center'
-    }
-});
+        this.setState({materialIconsReady: true});
+    };
+
+    // Support functions
+}
+/**/
